@@ -1,12 +1,19 @@
 # BeamNG Telemetry Dashboard
 
-A small Streamlit app that reads vehicle telemetry from BeamNG.drive through BeamNGpy.
+A minimalist Streamlit dashboard that reads vehicle telemetry from BeamNG.drive through BeamNGpy.
+
+## Layout
+
+- `src/beamng_telemetry_dashboard/backend/` contains the BeamNG connection and telemetry collection code.
+- `src/beamng_telemetry_dashboard/frontend/` contains the Streamlit UI and auto-refresh logic.
+- `app.py` is a thin launcher that starts the frontend.
 
 ## What it shows
 
 - Live or demo speed, RPM, throttle, brake, steering, fuel, and gear values
 - Current vehicle position and raw BeamNG sensor payloads
-- A compact trend chart for recent samples
+- Automatic polling at a configurable interval when live mode is enabled
+- A simple setup guide inside the UI
 
 ## Requirements
 
@@ -17,23 +24,26 @@ A small Streamlit app that reads vehicle telemetry from BeamNG.drive through Bea
 ## Install
 
 ```bash
-pip install -e .
+uv sync
 ```
+
+If you prefer editable installs without `uv`, `pip install -e .` still works.
 
 ## Run
 
 ```bash
-streamlit run app.py
+uv run streamlit run app.py
 ```
 
 ## BeamNG setup
 
 1. Start BeamNG.drive and load a scenario with a vehicle.
-2. If you want the app to launch BeamNG automatically, set `BNG_HOME` to your BeamNG installation folder.
-3. Adjust the host and port in the sidebar if your BeamNGpy connection uses something other than `localhost:25252`.
-4. Click `Refresh telemetry` to read the current vehicle state.
+2. Use the sidebar to set host, port, and the optional BeamNG home folder.
+3. Enable live mode and choose an auto-refresh interval greater than zero.
+4. Leave vehicle id empty to use the first active vehicle, or type a specific vehicle id.
 
 ## Notes
 
-- If BeamNGpy cannot connect, the app falls back to a demo data feed so the UI still works.
-- The app reads the active vehicle list from BeamNG and uses the first vehicle unless you type a specific vehicle id.
+- If BeamNGpy cannot connect, the app falls back to demo data so the UI remains usable.
+- Live polling can be turned off entirely from the sidebar.
+- The dashboard keeps a short history so the trend chart stays lightweight.
