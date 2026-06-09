@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 import sys
+from time import time
 from pathlib import Path
 
 import pandas as pd
@@ -13,7 +14,11 @@ SRC = ROOT / "src"
 if SRC.exists() and str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
-from beamng_telemetry_dashboard.backend.telemetry import BeamNGTelemetryClient, build_demo_sample
+from beamng_telemetry_dashboard.backend.telemetry import (
+    BeamNGTelemetryClient,
+    build_demo_sample,
+    export_sample_json,
+)
 
 
 def run_app() -> None:
@@ -96,6 +101,11 @@ def _render_sidebar() -> dict[str, object]:
             "If the app shows demo data, check that BeamNG is open, a scenario is loaded, and the port matches the simulator connection."
         )
 
+        st.divider()
+        st.subheader("Export")
+        export_json = st.checkbox("Write JSON files", value=True)
+        export_dir = st.text_input("Output folder", value=os.getenv("BEAMNG_OUTPUT_DIR", "data/telemetry"))
+
     return {
         "host": host,
         "port": int(port),
@@ -105,6 +115,8 @@ def _render_sidebar() -> dict[str, object]:
         "use_live": use_live,
         "launch": launch,
         "refresh_now": refresh_now,
+        "export_json": export_json,
+        "export_dir": export_dir.strip() or None,
     }
 
 
@@ -115,6 +127,10 @@ def _load_sample(settings: dict[str, object]):
         st.session_state.last_source = "demo"
     if "last_vehicle_ids" not in st.session_state:
         st.session_state.last_vehicle_ids = []
+    if "session_started_at" not in st.session_state:
+        st.session_state.session_started_at = time()
+    if "last_export_path" not in st.session_state:
+        st.session_state.last_export_path = None
 
     client = BeamNGTelemetryClient(
         host=str(settings["host"]),
@@ -139,6 +155,15 @@ def _load_sample(settings: dict[str, object]):
             sample = build_demo_sample()
     else:
         sample = build_demo_sample()
+
+    if st.session_state.session_started_at is None:
+        st.session_state.session_started_at = sample.timestamp
+
+    elapsed_seconds = sample.timestamp - float(st.session_state.session_started_at)
+    # Export JSON for live and demo samples when enabled
+    if settings["export_json"] and settings.get("export_dir"):
+        exported_path = export_sample_json(sample, settings["export_dir"], elapsed_seconds=elapsed_seconds)
+        st.session_state.last_export_path = str(exported_path)
 
     st.session_state.last_source = source
     st.session_state.last_vehicle_ids = vehicle_ids
@@ -211,9 +236,13 @@ def _render_body(sample, vehicle_ids: list[str], source: str, settings: dict[str
             st.write("Active vehicles: " + ", ".join(vehicle_ids))
         if sample.position is not None:
             st.write("Position: " + ", ".join(f"{coord:,.2f}" for coord in sample.position))
+        if sample.damage_pct is not None:
+            st.write(f"Damage: {sample.damage_pct:.4f}")
+        if st.session_state.last_export_path:
+            st.caption(f"Last JSON export: {st.session_state.last_export_path}")
         st.caption(f"Refresh: {'Auto' if settings['use_live'] else 'Manual'}")
         with st.expander("Raw payload", expanded=False):
-            st.json({"state": sample.raw_state, "electrics": sample.raw_electrics})
+            st.json({"state": sample.raw_state, "electrics": sample.raw_electrics, "damage": sample.raw_damage})
 
 
 def _format_value(value: float | int | None, suffix: str = "") -> str:
