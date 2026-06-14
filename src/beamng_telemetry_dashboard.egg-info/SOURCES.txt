@@ -1,0 +1,14 @@
+README.md
+pyproject.toml
+src/beamng_telemetry_dashboard/__init__.py
+src/beamng_telemetry_dashboard/client.py
+src/beamng_telemetry_dashboard.egg-info/PKG-INFO
+src/beamng_telemetry_dashboard.egg-info/SOURCES.txt
+src/beamng_telemetry_dashboard.egg-info/dependency_links.txt
+src/beamng_telemetry_dashboard.egg-info/requires.txt
+src/beamng_telemetry_dashboard.egg-info/top_level.txt
+src/beamng_telemetry_dashboard/backend/__init__.py
+src/beamng_telemetry_dashboard/backend/telemetry.py
+src/beamng_telemetry_dashboard/frontend/__init__.py
+src/beamng_telemetry_dashboard/frontend/dashboard.py
+src/beamng_telemetry_dashboard/frontend/ui.py

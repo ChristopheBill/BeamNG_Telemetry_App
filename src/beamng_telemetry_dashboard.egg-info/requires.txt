@@ -1,0 +1,4 @@
+beamngpy>=1.35.1
+pandas>=2.2.0
+streamlit-autorefresh>=1.0.1
+streamlit>=1.34.0
