@@ -1,0 +1,36 @@
+{
+  "timestamp": 18.62,
+  "vehicle_id": "demo_vehicle",
+  "position": [
+    116.54051375389818,
+    -37.47954130429599,
+    1.4
+  ],
+  "speed_kmh": 78.03,
+  "rpm": 2006,
+  "gear": 3,
+  "inputs": {
+    "throttle": 0.5843862829006388,
+    "brake": 0.10092998402504863,
+    "steering": 5.7151767410739245
+  },
+  "damage": 0.02069308732769934,
+  "fuel_pct": 62.92941778898239,
+  "engine_running": true,
+  "contacts": {
+    "source": "damage_sensor",
+    "damage_pct": 0.02069308732769934,
+    "part_damage": [
+      {
+        "part": "body",
+        "damage": 0.02
+      }
+    ]
+  },
+  "damage_detail": {
+    "damage": 0.02069308732769934,
+    "part_damage": {
+      "body": 0.02
+    }
+  }
+}

@@ -1,10 +1,10 @@
 # BeamNG Telemetry Dashboard
 
-A minimalist Streamlit dashboard that reads vehicle telemetry from BeamNG.drive through BeamNGpy.
+A minimalist Streamlit dashboard that reads vehicle telemetry from BeamNG.drive through OutGauge UDP.
 
 ## Layout
 
-- `src/beamng_telemetry_dashboard/backend/` contains the BeamNG connection and telemetry collection code.
+- `src/beamng_telemetry_dashboard/backend/` contains the OutGauge listener and telemetry collection code.
 - `src/beamng_telemetry_dashboard/frontend/` contains the Streamlit UI and auto-refresh logic.
 - `app.py` is a thin launcher that starts the frontend.
 
@@ -37,7 +37,7 @@ A minimalist Streamlit dashboard that reads vehicle telemetry from BeamNG.drive 
 
 - Python 3.10 or newer
 - BeamNG.drive installed locally
-- A running BeamNG scenario with at least one vehicle for live mode
+- OutGauge UDP enabled in BeamNG and pointed at the listener host/port
 
 ## Install
 
@@ -55,15 +55,15 @@ uv run streamlit run app.py
 
 ## BeamNG setup
 
-1. Start BeamNG.drive and load a scenario with a vehicle.
-2. Use the sidebar to set host, port, and the optional BeamNG home folder.
-3. Enable live mode and choose an auto-refresh interval greater than zero.
-4. Leave vehicle id empty to use the first active vehicle, or type a specific vehicle id.
-5. Use the export section in the sidebar to choose an output folder for JSON snapshots.
+1. Start BeamNG.drive and load a scenario.
+2. Enable the OutGauge UDP protocol in BeamNG's protocol settings.
+3. Use the sidebar to set the listener host and port, then point BeamNG at that address.
+4. Enable live mode and choose an auto-refresh interval greater than zero.
+5. Leave vehicle id empty unless you want a custom export label.
 
 ## Notes
 
-- If BeamNGpy cannot connect, the app falls back to demo data so the UI remains usable.
+- If no OutGauge packet arrives before the timeout, the app falls back to demo data so the UI remains usable.
 - Live polling can be turned off entirely from the sidebar.
 - The dashboard keeps a short history so the trend chart stays lightweight.
 - The app writes one JSON file per live sample when export is enabled.

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 import os
 import sys
 from time import time
@@ -13,6 +14,8 @@ ROOT = Path(__file__).resolve().parents[3]
 SRC = ROOT / "src"
 if SRC.exists() and str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
+
+logger = logging.getLogger(__name__)
 
 from beamng_telemetry_dashboard.backend.telemetry import (
     BeamNGTelemetryClient,
@@ -55,40 +58,30 @@ def _render_sidebar() -> dict[str, object]:
         st.markdown(
             """
             1. Start BeamNG.drive.
-            2. Load a scenario with a vehicle.
-            3. Keep live mode enabled if you want auto polling.
+            2. Enable the OutGauge UDP protocol in BeamNG.
+            3. Point BeamNG at the listener host and port shown below.
             """
         )
 
         st.divider()
-        st.subheader("Connection")
-        host = st.text_input("Host", value=os.getenv("BEAMNG_HOST", "localhost"))
+        st.subheader("OutGauge listener")
+        host = st.text_input("Listener host", value=os.getenv("OUTGAUGE_HOST", "0.0.0.0"))
         port = st.number_input(
-            "Port",
+            "Listener port",
             min_value=1,
             max_value=65535,
-            value=int(os.getenv("BEAMNG_PORT", "25252")),
+            value=int(os.getenv("OUTGAUGE_PORT", "4444")),
             step=1,
         )
-        home = st.text_input(
-            "BeamNG home",
-            value=os.getenv("BNG_HOME", ""),
-            help="Optional. Set this when you want the app to launch BeamNG automatically.",
-        )
-        user = st.text_input(
-            "BeamNG user",
-            value=os.getenv("BNG_USER", ""),
-            help="Optional user folder override.",
-        )
         vehicle_id = st.text_input(
-            "Vehicle id",
+            "Vehicle id override",
             value="",
-            help="Leave blank to use the first active vehicle.",
+            help="Optional label used for exports and the status row.",
         )
         use_live = st.checkbox("Live mode", value=True)
-        launch = st.checkbox("Launch BeamNG if needed", value=False)
         auto_refresh = st.checkbox("Auto refresh", value=True)
         refresh_seconds = st.slider("Refresh interval", 1, 15, 3)
+        timeout_seconds = st.slider("Receive timeout", 1, 30, 5)
 
         if use_live and auto_refresh:
             st_autorefresh(interval=refresh_seconds * 1000, key="beamng-autorefresh")
@@ -109,11 +102,9 @@ def _render_sidebar() -> dict[str, object]:
     return {
         "host": host,
         "port": int(port),
-        "home": home.strip() or None,
-        "user": user.strip() or None,
         "vehicle_id": vehicle_id.strip() or None,
         "use_live": use_live,
-        "launch": launch,
+        "timeout_seconds": timeout_seconds,
         "refresh_now": refresh_now,
         "export_json": export_json,
         "export_dir": export_dir.strip() or None,
@@ -135,8 +126,7 @@ def _load_sample(settings: dict[str, object]):
     client = BeamNGTelemetryClient(
         host=str(settings["host"]),
         port=int(settings["port"]),
-        home=settings["home"],
-        user=settings["user"],
+        timeout_seconds=float(settings["timeout_seconds"]),
     )
 
     source = "demo"
@@ -147,10 +137,16 @@ def _load_sample(settings: dict[str, object]):
         try:
             sample, vehicle_ids = client.read_sample(
                 vehicle_id=settings["vehicle_id"],
-                launch=bool(settings["launch"]),
             )
             source = "beamng"
         except Exception as exc:
+            logger.exception(
+                "BeamNG OutGauge read failed (host=%s, port=%s, vehicle_id=%s, timeout_seconds=%s)",
+                settings["host"],
+                settings["port"],
+                settings["vehicle_id"],
+                settings["timeout_seconds"],
+            )
             error_message = str(exc)
             sample = build_demo_sample()
     else:
@@ -228,7 +224,7 @@ def _render_body(sample, vehicle_ids: list[str], source: str, settings: dict[str
     with right:
         st.subheader("Setup")
         if source == "beamng":
-            st.success("Connected to BeamNG.")
+            st.success("Receiving OutGauge data from BeamNG.")
         else:
             st.info("Showing demo telemetry.")
         st.write(f"Vehicle id: {sample.vehicle_id}")

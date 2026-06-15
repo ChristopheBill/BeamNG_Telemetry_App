@@ -1,9 +1,8 @@
 Metadata-Version: 2.4
 Name: beamng-telemetry-dashboard
 Version: 0.1.0
-Summary: A Streamlit dashboard that reads telemetry from BeamNG.drive via BeamNGpy
+Summary: A Streamlit dashboard that reads telemetry from BeamNG.drive via OutGauge UDP
 Requires-Python: >=3.10
-Requires-Dist: beamngpy>=1.35.1
 Requires-Dist: pandas>=2.2.0
 Requires-Dist: streamlit-autorefresh>=1.0.1
 Requires-Dist: streamlit>=1.34.0
