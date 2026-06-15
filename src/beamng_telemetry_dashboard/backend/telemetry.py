@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import logging
+import re
 import socket
 import struct
 from dataclasses import dataclass, field
@@ -236,8 +237,10 @@ def _parse_outgauge_packet(payload: bytes, address: tuple[str, int]) -> dict[str
         "id": packet_id,
     }
 
+    vehicle_label = f"{car}_{packet_id}" if packet_id is not None else car
+
     return {
-        "vehicle_id": f"{car}:{packet_id}" if packet_id is not None else car,
+        "vehicle_id": _sanitize_filename_part(vehicle_label),
         "speed_mps": speed_mps,
         "speed_kph": speed_mps * 3.6,
         "rpm": rpm,
@@ -255,7 +258,8 @@ def export_sample_json(sample: TelemetrySample, output_dir: str | Path, elapsed_
     destination = Path(output_dir)
     destination.mkdir(parents=True, exist_ok=True)
     stamp = int(round(sample.timestamp * 1000))
-    file_path = destination / f"{sample.vehicle_id}_{stamp}.json"
+    file_stem = _sanitize_filename_part(sample.vehicle_id)
+    file_path = destination / f"{file_stem}_{stamp}.json"
     payload = sample.to_export_record(elapsed_seconds=elapsed_seconds)
     file_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
     return file_path
@@ -315,6 +319,11 @@ def build_demo_sample(seed: float | None = None) -> TelemetrySample:
 
 def _decode_fixed_string(value: bytes) -> str:
     return value.split(b"\x00", 1)[0].decode("ascii", errors="ignore").strip()
+
+
+def _sanitize_filename_part(value: str) -> str:
+    cleaned = re.sub(r"[^A-Za-z0-9._-]+", "_", value).strip("._-")
+    return cleaned or "telemetry"
 
 
 def _gear_from_outgauge(gear: int) -> int:

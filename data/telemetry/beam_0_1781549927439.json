@@ -1,0 +1,16 @@
+{
+  "timestamp": 39.71,
+  "vehicle_id": "beam_0",
+  "position": null,
+  "speed_kmh": 0.0,
+  "rpm": 989,
+  "gear": 0,
+  "inputs": {
+    "throttle": 0.0,
+    "brake": 0.30000001192092896,
+    "steering": null
+  },
+  "damage": null,
+  "fuel_pct": 99.35885667800903,
+  "engine_running": true
+}

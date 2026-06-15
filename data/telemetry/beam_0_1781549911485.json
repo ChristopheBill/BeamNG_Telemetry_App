@@ -1,0 +1,16 @@
+{
+  "timestamp": 23.75,
+  "vehicle_id": "beam_0",
+  "position": null,
+  "speed_kmh": 122.48,
+  "rpm": 5047,
+  "gear": 5,
+  "inputs": {
+    "throttle": 0.0,
+    "brake": 0.0,
+    "steering": null
+  },
+  "damage": null,
+  "fuel_pct": 99.52565431594849,
+  "engine_running": true
+}
